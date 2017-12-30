@@ -6,21 +6,30 @@ Created on Fri Dec 29 10:35:24 2017
 """
 import numpy as np
 import matplotlib.pyplot as plt
+from random import shuffle
 
-ALPHA = 0.5
+ALPHA = 0.1
 my_data = np.genfromtxt('iris.csv', delimiter=';')
 #normalizing values
-for i in range(4):
+for i in range(5):
     my_data[:,i] = ( my_data[:,i] - min(my_data[:,i]) ) / (max(my_data[:,i]) - min(my_data[:,i]))
 
-#separating training set and test set
-#trainData = list(my_data[0:35])+ list(my_data[50:85])
+#shuffling each part
+shuffle(my_data[0:50])
+shuffle(my_data[50:100])
+shuffle(my_data[100:150])
+
+#separating training set and test set 
 trainData = list(my_data[0:35])+ list(my_data[50:85])+ list(my_data[100:135])
 testData  = list(my_data[35:50])+ list(my_data[85:100])+ list(my_data[135:150])
 
 #sigmoid function
 def sigmoid(x):
-  return 1.0 / (1 + np.exp(-x))
+   #a = 1.716
+   #b = 0.667
+   return 1.0 / (1 + np.exp(-x))
+   #return ((2.0*a)/(1.0+np.exp(-b*x))) - a
+
 #proccess data
 def neuron(entry, weights):
     return np.sum(entry*weights)
@@ -29,9 +38,9 @@ def trainNetwork(entries):
     #weights of hidden layer
     weightsH = [None]*3
     for i in range(3):
-        weightsH[i] = np.random.uniform(low=-1,high=1,size=5)
+        weightsH[i] = np.random.uniform(low=-2.4/5,high=2.4/5,size=5)
     #weights of output layer
-    weightsOut = np.random.uniform(low=-1,high=1,size=4)    
+    weightsOut = np.random.uniform(low=-2.4/4,high=2.4/4,size=4)    
     eqs = []
     while True:    
         errors = []
@@ -45,7 +54,7 @@ def trainNetwork(entries):
             xOut = np.append(yH, -1)
             yOut = sigmoid(neuron(xOut, np.array(weightsOut))) 
             
-            if yOut != entry[-1]:
+            if yOut!=entry[-1]:
                 error = entry[-1] - yOut        
                 #gradient and dWeights of out layer
                 gradOut = yOut*(1.0-yOut)*error
@@ -54,7 +63,7 @@ def trainNetwork(entries):
                 #with momentum
                 #dWeightsOut = [Beta*old[i] + ALPHA*xOut[i]*gradOut for i in range(xOut.__len__())]
                 
-                old = dWeightsOut
+                #old = dWeightsOut
                 #gradient and dWeights of hidden layer
                 gradH = [yH[i]*(1.0-yH[i])*gradOut*weightsOut[i] for i in range(yH.__len__())]
                 dWeightsH = [None]*weightsH.__len__()
@@ -69,16 +78,28 @@ def trainNetwork(entries):
         eq = sum([x**2 for x in errors])
         eqs.append(eq)
         print eq
-        if eq < 0.001:
+        if eq < 0.01:
             break
     return weightsH, weightsOut, eqs
 
-wightsH, weightsOut, y = trainNetwork(trainData)
-#print y
+def testNetwork(weightsH, weightsOut, entry):
+    xh = np.append(entry[:-1], -1)
+    yH = [sigmoid(neuron(xh,np.array(weightsH[i]))) for i in range(weightsH.__len__())] 
+    xOut = np.append(yH, -1)
+    yOut = sigmoid(neuron(xOut, np.array(weightsOut)))
+    return yOut
+
+weightsH, weightsOut, y = trainNetwork(trainData)
+print "Pesos: "
+print weightsH
+print weightsOut
 x = np.arange(0.0, y.__len__(), 1.0)
-plt.plot(x[500:],y[500:])
+plt.plot(x,y)
 plt.show()
 
-
-
+correct = 0
+for entry in testData:
+    if (testNetwork(weightsH, weightsOut, entry)-entry[-1]) < 0.1:
+        correct += 1
+print "Accuracy: "+str(float(correct)/testData.__len__())
 
