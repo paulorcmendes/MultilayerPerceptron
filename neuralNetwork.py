@@ -8,12 +8,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from random import shuffle
 
-ALPHA = 0.1
+ALPHA = 10.0
 my_data = np.genfromtxt('iris.csv', delimiter=';')
 #normalizing values
 for i in range(5):
     my_data[:,i] = ( my_data[:,i] - min(my_data[:,i]) ) / (max(my_data[:,i]) - min(my_data[:,i]))
-
 #shuffling each part
 shuffle(my_data[0:50])
 shuffle(my_data[50:100])
@@ -44,8 +43,8 @@ def trainNetwork(entries):
     eqs = []
     while True:    
         errors = []
-        old = [0.0]*4
-        Beta = 0.95
+        #old = [0.0]*4
+        #Beta = 0.95
         for entry in entries:       
             xh = np.append(entry[:-1], -1)
             #print xh
@@ -77,8 +76,8 @@ def trainNetwork(entries):
                 errors.append(error)
         eq = sum([x**2 for x in errors])
         eqs.append(eq)
-        print eq
-        if eq < 0.01:
+        #print eq
+        if eq < 0.001:
             break
     return weightsH, weightsOut, eqs
 
@@ -90,7 +89,7 @@ def testNetwork(weightsH, weightsOut, entry):
     return yOut
 
 weightsH, weightsOut, y = trainNetwork(trainData)
-print "Pesos: "
+print "Weights: "
 print weightsH
 print weightsOut
 x = np.arange(0.0, y.__len__(), 1.0)
@@ -99,7 +98,7 @@ plt.show()
 
 correct = 0
 for entry in testData:
-    if (testNetwork(weightsH, weightsOut, entry)-entry[-1]) < 0.1:
+    if (testNetwork(weightsH, weightsOut, entry)-entry[-1]) < 0.05:
         correct += 1
-print "Accuracy: "+str(float(correct)/testData.__len__())
+print "Accuracy: "+str(float(correct)*100/testData.__len__())+"%"
 
