@@ -76,7 +76,7 @@ def trainNetwork(entries):
                 errors.append(error)
         eq = sum([x**2 for x in errors])
         eqs.append(eq)
-        #print eq
+        print eq
         if eq < 0.001:
             break
     return weightsH, weightsOut, eqs
